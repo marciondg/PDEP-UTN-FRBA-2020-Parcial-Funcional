@@ -1,6 +1,6 @@
 {-
-Nombre: Apellido, Nombre
-Legajo: 999999-9
+Nombre: Garozzo, Marcio Nicolas David
+Legajo: 168061-4
 -}
 
 module Lib where
