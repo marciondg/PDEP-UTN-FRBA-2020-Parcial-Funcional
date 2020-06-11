@@ -113,9 +113,59 @@ paseoEnBarco "tranquila" = salirConGenteQueHabla "aleman".apreciarElementoPaisaj
 
 {-Además:
 Hacer que un turista haga una excursión. Al hacer una excursión, el turista además de sufrir los efectos propios de la excursión, reduce en un 10% su stress. -}
-{- 
+
 realizarExcursion :: Turista->Excursion->Turista
-realizarExcursion turista excursion = (reducirStress porcentajeDeStress).excursion turista -}
+realizarExcursion turista excursion = (reducirStress (porcentajeDeStress 10 turista).excursion) turista
 
 porcentajeDeStress :: Int->Turista->Int
-porcentajeDeStress porcentaje = (*porcentaje).nivelDeStress
+porcentajeDeStress porcentaje = (`div` 100).(*porcentaje).nivelDeStress
+
+{- 
+==========================================================PUNTO 2 B========================================================== 
+Dada la función -}
+deltaSegun :: (a -> Int) -> a -> a -> Int
+deltaSegun f algo1 algo2 = f algo1 - f algo2
+{- 
+Definir la función deltaExcursionSegun que a partir de un índice, un turista y una excursión determine cuánto varió dicho índice 
+después de que el turista haya hecho la excursión. Llamamos índice a cualquier función que devuelva un número a partir de un turista.
+Por ejemplo, si “stress” es la función que me da el stress de un turista:
+> deltaExcursionSegun stress ana irALaPlaya
+-3     -- porque al ir a la playa Ana queda con 18 de estrés (21 menos 1 menos 10% de 20) -}
+
+deltaExcursionSegun :: (Turista->Int)->Turista->Excursion->Int
+deltaExcursionSegun indice turista excursion = deltaSegun indice (realizarExcursion turista excursion) turista
+
+{- 
+==========================================================PUNTO 2 C========================================================== 
+Usar la función anterior para resolver cada uno de estos puntos:-}
+
+--Saber si una excursión es educativa para un turista, que implica que termina aprendiendo algún idioma.
+
+excursionEducativa :: Turista->Excursion->Bool
+excursionEducativa turista = (>0).deltaExcursionSegun (length.idiomas) turista
+
+--Conocer las excursiones desestresantes para un turista. Estas son aquellas que le reducen al menos 3 unidades de stress al turista.
+
+excursionDesestresante :: Turista->Excursion->Bool
+excursionDesestresante turista = (<=(-3)).deltaExcursionSegun nivelDeStress turista
+
+
+{- 
+==========================================================PUNTO 3========================================================== 
+Para mantener a los turistas ocupados todo el día, la empresa vende paquetes de excursiones llamados tours. Un tour se compone por una serie de excursiones. -}
+type Tour = [Excursion]
+{- 
+Completo: Comienza con una caminata de 20 minutos para apreciar una "cascada", luego se camina 40 minutos hasta una playa, 
+          y finaliza con una salida con gente local que habla "melmacquiano". -}
+
+completo :: Tour
+completo = [caminarMinutos 20, apreciarElementoPaisaje "cascada", caminarMinutos 40.irALaPlaya, salirConGenteQueHabla "melmacquiano"]
+
+
+
+
+
+
+{- 
+==========================================================PUNTO 3 A========================================================== 
+Hacer que un turista haga un tour. Esto implica primero pagar, lo que aumenta el stress tantas unidades como excursiones tenga el tour, y luego realizar las excursiones en orden. -}
