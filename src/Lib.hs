@@ -196,10 +196,50 @@ pagarTour tour = aumentarStress $ length tour
 Dado un conjunto de tours, saber si existe alguno que sea convincente para un turista. 
 Esto significa que el tour tiene alguna excursión desestresante la cual, además, deja al turista acompañado luego de realizarla. -}
 
-{- existeTourConvincente :: Turista->[Tour]->Bool
-existeTourConvincente = undefined
-existeExcursionConvincente :: Turista->Tour->Bool
-existeExcursionConvincente turista = any excursionConvincente 
+existeTourConvincente :: Turista->[Tour]->Bool
+existeTourConvincente turista = any $ tourConvincente turista
+
+tourConvincente :: Turista->Tour->Bool
+tourConvincente turista = any $ excursionConvincente turista
  
-excursionConvincente :: Excursion->Turista->Bool
-excursionConvincente excursion turista = (not.viajaSolo.realizarExcursion turista) excursion && excursionDesestresante turista excursion -}
+excursionConvincente :: Turista->Excursion->Bool
+excursionConvincente turista excursion= (not.viajaSolo.realizarExcursion turista) excursion && excursionDesestresante turista excursion
+
+{- 
+==========================================================PUNTO 3 C========================================================== 
+Saber la efectividad de un tour para un conjunto de turistas. Esto se calcula como la sumatoria de la espiritualidad recibida de cada turista
+a quienes les resultó convincente el tour. La espiritualidad que recibe un turista es la suma de las pérdidas de stress y cansancio tras el tour. -}
+
+efectividadTour :: Tour->[Turista]->Int
+efectividadTour tour = sum . map (espiritualidad tour)
+
+espiritualidad :: Tour->Turista->Int
+espiritualidad tour turista = abs $ deltaTourSegun nivelDeCansancio tour turista + deltaTourSegun nivelDeStress tour turista
+
+deltaTourSegun :: (Turista->Int)->Tour->Turista->Int
+deltaTourSegun indice tour turista = deltaSegun indice (realizarTour tour turista) turista
+
+{- 
+==========================================================PUNTO 4========================================================== 
+Implementar y contestar en modo de comentarios o pruebas por consola
+Construir un tour donde se visiten infinitas playas.
+-}
+tourInfinitoDePlayas :: Tour
+tourInfinitoDePlayas = repeat irALaPlaya
+
+-- ¿Se puede saber si ese tour es convincente para Ana? ¿Y con Beto? Justificar.
+--Ana:
+{-*Lib Lib> tourConvincente ana tourInfinitoDePlayas
+True -}
+--Beto:
+{- *Lib Lib> tourConvincente beto tourInfinitoDePlayas
+Interrupted. -}
+
+{- 
+Estos resultados diferentes se debe al metodo de evaluacion que posee Haskell (Evaluacion Diferida / Lazy evaluation), 
+en donde el lenguaje no busca procesar todo lo que le pasamos, si no lo que necesita.
+En el caso de Ana, ya el primer elemento de la lista cumple con la condicion para que sea tour convincente (exista una excursion convincente). Es un algoritmo que converge
+En cambio, en Beto, el programa quedará procesando hasta que lo interrumpamos buscando un elemento que cumpla la condicion. Diverge.
+-}
+
+-- ¿Existe algún caso donde se pueda conocer la efectividad de este tour? Justificar.
