@@ -41,25 +41,44 @@ ana :: Turista
 ana = UnTurista 0 21 False ["español"]
 
 beto :: Turista
-beto = UnTurista 15 15 True ["alemán"]
+beto = UnTurista 15 15 True ["aleman"]
 
 cathi :: Turista
-cathi = UnTurista 15 15 True ["alemán", "catalán"]
+cathi = UnTurista 15 15 True ["aleman", "catalan"]
 {- 
 ==========================================================PUNTO 2========================================================== 
 Modelar las siguientes excursiones de forma tal que para agregar una excursión al sistema no haga falta modificar las funciones existentes. -}
-
+type Excursion = Turista->Turista
 --Ir a la playa: si está viajando solo baja el cansancio en 5 unidades, si no baja el stress 1 unidad.
+irALaPlaya :: Excursion
+irALaPlaya turista | viajaSolo turista = reducirCansancio 5 turista
+                   | otherwise = reducirStress 1 turista
 
+reducirCansancio :: Int->Turista->Turista
+reducirCansancio unidades turista = turista{nivelDeCansancio = nivelDeCansancio turista - unidades}
 
+reducirStress :: Int->Turista->Turista
+reducirStress unidades turista = turista{nivelDeStress = nivelDeStress turista - unidades}
 
 --Apreciar algún elemento del paisaje: reduce el stress en la cantidad de letras de lo que se aprecia. 
 
+apreciarElementoPaisaje :: String->Excursion
+
+apreciarElementoPaisaje elemento = reducirStress (length elemento)
 
 --Salir con gente que habla un idioma específico: el turista termina aprendiendo dicho idioma y continúa el viaje acompañado.
 
+salirConGenteQueHabla :: Idioma->Excursion
+salirConGenteQueHabla idioma = aprenderIdioma idioma
+
+aprenderIdioma :: Idioma->Turista->Turista
+aprenderIdioma idioma turista = turista {idiomas= ((:) idioma.idiomas) turista}
 
 --Caminar ciertos minutos: aumenta el cansancio pero reduce el stress según la intensidad de la caminada. 
+
+caminarMinutos :: Int->Excursion
+caminarMinutos minutos = undefined
+
 --El nivel de intensidad se calcula en 1 unidad cada 4 minutos que se caminen.
 
 
@@ -67,11 +86,6 @@ Modelar las siguientes excursiones de forma tal que para agregar una excursión 
 --si está fuerte, aumenta el stress en 6 unidades y el cansancio en 10.
 --si está moderada, no pasa nada.
 --si está tranquila, el turista camina 10’ por la cubierta, aprecia la vista del “mar”, y sale a hablar con los tripulantes alemanes.
-
-
-
-
-
 
 
 
