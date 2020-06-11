@@ -54,17 +54,34 @@ irALaPlaya :: Excursion
 irALaPlaya turista | viajaSolo turista = reducirCansancio 5 turista
                    | otherwise = reducirStress 1 turista
 
+
+modificarCansancio :: (Int -> Int -> Int) -> Int -> Turista -> Turista
+modificarCansancio f unidades turista = turista{nivelDeCansancio = f (nivelDeCansancio turista) unidades}
+
+aumentarCansancio :: Int->Turista->Turista
+aumentarCansancio unidades = modificarCansancio (+) unidades
+
 reducirCansancio :: Int->Turista->Turista
-reducirCansancio unidades turista = turista{nivelDeCansancio = nivelDeCansancio turista - unidades}
+reducirCansancio unidades = modificarCansancio (-) unidades
+
+{- 
+modificar :: (Turista->Int)->(Int -> Int -> Int) -> Int -> Turista -> Turista
+modificar parametro f unidades turista = turista {parametro = (f (parametro turista) unidades)} -}   -- Queria hacer una abstraccion de este estilo pero no me sale, no se si se puede lo que quiero.
+
+modificarStress :: (Int -> Int -> Int) -> Int -> Turista -> Turista
+modificarStress f unidades turista = turista{nivelDeStress = f (nivelDeStress turista) unidades}
+
+aumentarStress :: Int->Turista->Turista
+aumentarStress unidades = modificarStress (+) unidades
 
 reducirStress :: Int->Turista->Turista
-reducirStress unidades turista = turista{nivelDeStress = nivelDeStress turista - unidades}
+reducirStress unidades = modificarStress (-) unidades
 
 --Apreciar algún elemento del paisaje: reduce el stress en la cantidad de letras de lo que se aprecia. 
 
 apreciarElementoPaisaje :: String->Excursion
 
-apreciarElementoPaisaje elemento = reducirStress (length elemento)
+apreciarElementoPaisaje elemento = reducirStress $ length elemento
 
 --Salir con gente que habla un idioma específico: el turista termina aprendiendo dicho idioma y continúa el viaje acompañado.
 
@@ -75,19 +92,30 @@ aprenderIdioma :: Idioma->Turista->Turista
 aprenderIdioma idioma turista = turista {idiomas= ((:) idioma.idiomas) turista}
 
 --Caminar ciertos minutos: aumenta el cansancio pero reduce el stress según la intensidad de la caminada. 
+--  El nivel de intensidad se calcula en 1 unidad cada 4 minutos que se caminen.
 
 caminarMinutos :: Int->Excursion
-caminarMinutos minutos = undefined
+caminarMinutos minutos = aumentarCansancio (intensidadCaminata minutos).reducirStress (intensidadCaminata minutos)
 
---El nivel de intensidad se calcula en 1 unidad cada 4 minutos que se caminen.
-
+intensidadCaminata :: Int->Int
+intensidadCaminata minutos = minutos`div`4
 
 --Paseo en barco: depende de cómo esté la marea
 --si está fuerte, aumenta el stress en 6 unidades y el cansancio en 10.
 --si está moderada, no pasa nada.
 --si está tranquila, el turista camina 10’ por la cubierta, aprecia la vista del “mar”, y sale a hablar con los tripulantes alemanes.
+type Marea = String
 
-
+paseoEnBarco :: Marea->Excursion
+paseoEnBarco "fuerte" = aumentarCansancio 10 . aumentarStress 6
+paseoEnBarco "moderada" = id
+paseoEnBarco "tranquila" = salirConGenteQueHabla "aleman".apreciarElementoPaisaje "mar".caminarMinutos 10
 
 {-Además:
 Hacer que un turista haga una excursión. Al hacer una excursión, el turista además de sufrir los efectos propios de la excursión, reduce en un 10% su stress. -}
+{- 
+realizarExcursion :: Turista->Excursion->Turista
+realizarExcursion turista excursion = (reducirStress porcentajeDeStress).excursion turista -}
+
+porcentajeDeStress :: Int->Turista->Int
+porcentajeDeStress porcentaje = (*porcentaje).nivelDeStress
