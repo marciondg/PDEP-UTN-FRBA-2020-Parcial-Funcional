@@ -86,10 +86,14 @@ apreciarElementoPaisaje elemento = reducirStress $ length elemento
 --Salir con gente que habla un idioma específico: el turista termina aprendiendo dicho idioma y continúa el viaje acompañado.
 
 salirConGenteQueHabla :: Idioma->Excursion
-salirConGenteQueHabla idioma = aprenderIdioma idioma
+salirConGenteQueHabla idioma = continuarAcompañado . aprenderIdioma idioma
 
 aprenderIdioma :: Idioma->Turista->Turista
 aprenderIdioma idioma turista = turista {idiomas= ((:) idioma.idiomas) turista}
+
+continuarAcompañado :: Turista->Turista
+continuarAcompañado turista = turista {viajaSolo = False}
+
 
 --Caminar ciertos minutos: aumenta el cansancio pero reduce el stress según la intensidad de la caminada. 
 --  El nivel de intensidad se calcula en 1 unidad cada 4 minutos que se caminen.
@@ -160,12 +164,42 @@ Completo: Comienza con una caminata de 20 minutos para apreciar una "cascada", l
 
 completo :: Tour
 completo = [caminarMinutos 20, apreciarElementoPaisaje "cascada", caminarMinutos 40.irALaPlaya, salirConGenteQueHabla "melmacquiano"]
+{- 
+Lado B: Este tour consiste en ir al otro lado de la isla a hacer alguna excursión (de las existentes) que elija el turista. 
+        Primero se hace un paseo en barco por aguas tranquilas (cercanas a la costa) hasta la otra punta de la isla, 
+        luego realiza la excursión elegida y finalmente vuelve caminando hasta la otra punta, tardando 2 horas. -}
 
+ladoB :: Excursion->Tour
+ladoB excursion = [paseoEnBarco "tranquila", excursion, caminarMinutos 120]
 
+{- 
+Isla Vecina: Se navega hacia una isla vecina para hacer una excursión. Esta excursión depende de cómo esté la marea al llegar a la otra isla: si está fuerte se aprecia un "lago", 
+            sino se va a una playa. En resumen, este tour implica hacer un paseo en barco hasta la isla vecina, luego llevar a cabo dicha excursión, 
+            y finalmente volver a hacer un paseo en barco de regreso. La marea es la misma en todo el camino. -}
 
-
-
+islaVecina :: Marea->Tour
+islaVecina "fuerte" = [paseoEnBarco "fuerte", apreciarElementoPaisaje "lago", paseoEnBarco "fuerte"]
+islaVecina marea = [paseoEnBarco marea, irALaPlaya, paseoEnBarco marea]
 
 {- 
 ==========================================================PUNTO 3 A========================================================== 
 Hacer que un turista haga un tour. Esto implica primero pagar, lo que aumenta el stress tantas unidades como excursiones tenga el tour, y luego realizar las excursiones en orden. -}
+
+realizarTour :: Tour->Turista->Turista
+realizarTour tour turista =foldl realizarExcursion (pagarTour tour turista) tour
+
+pagarTour :: Tour->Turista->Turista
+pagarTour tour = aumentarStress $ length tour
+
+{- 
+==========================================================PUNTO 3 B========================================================== 
+Dado un conjunto de tours, saber si existe alguno que sea convincente para un turista. 
+Esto significa que el tour tiene alguna excursión desestresante la cual, además, deja al turista acompañado luego de realizarla. -}
+
+{- existeTourConvincente :: Turista->[Tour]->Bool
+existeTourConvincente = undefined
+existeExcursionConvincente :: Turista->Tour->Bool
+existeExcursionConvincente turista = any excursionConvincente 
+ 
+excursionConvincente :: Excursion->Turista->Bool
+excursionConvincente excursion turista = (not.viajaSolo.realizarExcursion turista) excursion && excursionDesestresante turista excursion -}
