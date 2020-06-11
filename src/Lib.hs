@@ -54,7 +54,6 @@ irALaPlaya :: Excursion
 irALaPlaya turista | viajaSolo turista = reducirCansancio 5 turista
                    | otherwise = reducirStress 1 turista
 
-
 modificarCansancio :: (Int -> Int -> Int) -> Int -> Turista -> Turista
 modificarCansancio f unidades turista = turista{nivelDeCansancio = f (nivelDeCansancio turista) unidades}
 
@@ -63,10 +62,6 @@ aumentarCansancio unidades = modificarCansancio (+) unidades
 
 reducirCansancio :: Int->Turista->Turista
 reducirCansancio unidades = modificarCansancio (-) unidades
-
-{- 
-modificar :: (Turista->Int)->(Int -> Int -> Int) -> Int -> Turista -> Turista
-modificar parametro f unidades turista = turista {parametro = (f (parametro turista) unidades)} -}   -- Queria hacer una abstraccion de este estilo pero no me sale, no se si se puede lo que quiero.
 
 modificarStress :: (Int -> Int -> Int) -> Int -> Turista -> Turista
 modificarStress f unidades turista = turista{nivelDeStress = f (nivelDeStress turista) unidades}
@@ -86,13 +81,13 @@ apreciarElementoPaisaje elemento = reducirStress $ length elemento
 --Salir con gente que habla un idioma específico: el turista termina aprendiendo dicho idioma y continúa el viaje acompañado.
 
 salirConGenteQueHabla :: Idioma->Excursion
-salirConGenteQueHabla idioma = continuarAcompañado . aprenderIdioma idioma
+salirConGenteQueHabla idioma = continuarViajeAcompañado . aprenderIdioma idioma
 
 aprenderIdioma :: Idioma->Turista->Turista
 aprenderIdioma idioma turista = turista {idiomas= ((:) idioma.idiomas) turista}
 
-continuarAcompañado :: Turista->Turista
-continuarAcompañado turista = turista {viajaSolo = False}
+continuarViajeAcompañado :: Turista->Turista
+continuarViajeAcompañado turista = turista {viajaSolo = False}
 
 
 --Caminar ciertos minutos: aumenta el cansancio pero reduce el stress según la intensidad de la caminada. 
@@ -158,12 +153,13 @@ excursionDesestresante turista = (<=(-3)).deltaExcursionSegun nivelDeStress turi
 ==========================================================PUNTO 3========================================================== 
 Para mantener a los turistas ocupados todo el día, la empresa vende paquetes de excursiones llamados tours. Un tour se compone por una serie de excursiones. -}
 type Tour = [Excursion]
+
 {- 
 Completo: Comienza con una caminata de 20 minutos para apreciar una "cascada", luego se camina 40 minutos hasta una playa, 
           y finaliza con una salida con gente local que habla "melmacquiano". -}
 
 completo :: Tour
-completo = [caminarMinutos 20, apreciarElementoPaisaje "cascada", caminarMinutos 40.irALaPlaya, salirConGenteQueHabla "melmacquiano"]
+completo = [caminarMinutos 20, apreciarElementoPaisaje "cascada", irALaPlaya.caminarMinutos 40, salirConGenteQueHabla "melmacquiano"]
 {- 
 Lado B: Este tour consiste en ir al otro lado de la isla a hacer alguna excursión (de las existentes) que elija el turista. 
         Primero se hace un paseo en barco por aguas tranquilas (cercanas a la costa) hasta la otra punta de la isla, 
@@ -235,11 +231,19 @@ True -}
 {- *Lib Lib> tourConvincente beto tourInfinitoDePlayas
 Interrupted. -}
 
-{- 
+{-------------------------------RESPUESTA:
 Estos resultados diferentes se debe al metodo de evaluacion que posee Haskell (Evaluacion Diferida / Lazy evaluation), 
 en donde el lenguaje no busca procesar todo lo que le pasamos, si no lo que necesita.
 En el caso de Ana, ya el primer elemento de la lista cumple con la condicion para que sea tour convincente (exista una excursion convincente). Es un algoritmo que converge
 En cambio, en Beto, el programa quedará procesando hasta que lo interrumpamos buscando un elemento que cumpla la condicion. Diverge.
 -}
 
+
 -- ¿Existe algún caso donde se pueda conocer la efectividad de este tour? Justificar.
+
+--------------------------------RESPUESTA:
+{- No existiria ningun caso donde se pueda conocer la efectividad de este tour infinito, 
+   porque nunca terminariamos de reducir la lista de tours en un solo turista para calcular su espiritualidad 
+   (en otras palabras, nunca terminariamos de procesar realizarTour) 
+   La justificacion es por el mismo concepto explicado en la respuesta anterior: Lazy evaluation.
+   Al tratarse de un algoritmo divergente por la naturalidad de la lista, no obtenemos respuesta-}
